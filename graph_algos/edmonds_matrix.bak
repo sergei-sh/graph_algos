@@ -1,0 +1,20 @@
+""" 
+Updated: 2017
+Author: Sergei Shliakhtin
+Contact: xxx.serj@gmail.com
+Notes: 
+
+Edmonds matrix representation related routines. Hungarian algorithm implementation
+requires Edmonds, so conversion is needed.
+"""
+
+def distance_edmonds(dist_mx, red_vertices, black_vertices):
+    """Convert distance matrix graph into Edmonds matrix. 
+
+    dist_mx - graphs distance matrix N x N
+    red_vertices - vertices vector 1 x M to form horizontal axis of Edmonds matrix. Should be M == N / 2 
+    black_vertices - vertices vector 1 x M to form vertical axis of Edmonds matrix. These should be (dist_mx - red_vertices)
+    return M x M matrix. 
+    """
+
+
