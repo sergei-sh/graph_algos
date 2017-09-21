@@ -7,13 +7,47 @@ Notes:
 """
 
 
+import networkx as nx 
 import numpy as np
 import unittest
 
 from graph_algos import INF, GraphAlgoException
-from graph_algos.distance_matrix import verify_dist_mx, triple_dist_oneb, triple_dist_zerob, half_mx_dist
+from graph_algos.distance_matrix import verify_dist_mx, triple_dist_oneb, triple_dist_zerob, half_mx_dist, path_length, graph_dist_mx
+
 
 class TestAux(unittest.TestCase):
+
+    def test_graph_dist_mx(self):
+        g = nx.Graph()
+        g.add_edge(0, 1, weight=3)
+        g.add_edge(0, 2, weight=4)
+        g.add_edge(2, 3, weight=5)
+
+        dist_mx = graph_dist_mx(graph=g) 
+        check = np.array([
+            [INF, 3, 4, INF],
+            [3, INF, INF, INF],
+            [4, INF, INF, 5],
+            [INF, INF, 5, INF],
+            ])
+
+        print(dist_mx)
+        self.assertEqual(np.ma.allequal(dist_mx, check), True)
+
+    def test_path_length(self):
+        mx1 = np.array([ 
+                [INF, 1, 4, INF], 
+                [1, INF, 3, 6], 
+                [4, 3, INF, 7], 
+                [INF, 6, 7, INF], ])
+
+        verify_dist_mx(mx1); 
+
+        # 0 - 1 - 2 - 3
+        self.assertEqual(path_length(mx1, path=iter(range(4))), 11)
+
+        self.assertRaises(GraphAlgoException, path_length, mx1, path=iter([]))
+        self.assertRaises(GraphAlgoException, path_length, mx1, path=iter([0, 1, 3, 0]))
 
     def test_verify_dist_mx(self):
         mx1 = np.array([ [INF, 1, 2], 

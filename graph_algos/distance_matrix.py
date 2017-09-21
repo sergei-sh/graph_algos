@@ -2,14 +2,58 @@
 Updated: 2017
 Author: Sergei Shliakhtin
 Contact: xxx.serj@gmail.com
+Parser: Python3
 Notes:
 
-Auxiliary routines for graph algos 
+Auxiliary routines on distance (adjacency) matrices
 """
+
+import numpy as np
 
 from graph_algos import INF, GraphAlgoException
 
-import numpy as np
+"TODO: rewrite"
+def graph_dist_mx(*, graph):
+    """Convert NetworkX graph into distance matrix
+    
+    graph - networkx.Graph
+    return - numpy distance matrix
+    """
+    size = len(graph.nodes())
+    dist_mx = np.full((size, size), INF)
+    for i in range(0, size):
+        for j in range(0, size):
+            if i != j:
+                try:
+                    dist_mx[i][j] = graph[i][j]["weight"] 
+                except KeyError:
+                    pass
+    return dist_mx                
+
+def path_length(dist_mx, *, path):
+    """Count the cost (sum of weights) of a given path
+
+    dist_mx - numpy distance matrix
+    path - iterable with vertices
+    """
+    path = iter(path)
+    length = 0
+
+    try:
+        vert = next(path)
+    except StopIteration:
+        raise GraphAlgoException("The path is empty")
+
+    for vert_next in path:
+        edge_len = dist_mx[vert][vert_next]
+        if INF == edge_len:
+            raise GraphAlgoException("No edge between these vertices {} {}".format(vert, vert_next))
+        length += edge_len
+
+        vert = vert_next
+
+    return length        
+
 
 def verify_dist_mx(dist_mx):
     """Checks distance matrix is symmetric and has INF in the diagonal, assert if not OK
@@ -33,7 +77,8 @@ def triple_dist_zerob(triples, num_vx):
     Take (from, to, weight) tuples and form distance matrix.
     from, to - vertex indices, zero-based
     
-    triples - seq of triples
+    triples - sequence of 3-tuples
+    num_vx - int vertex count
     return - distance matrix, row N (zero-based) represents vertex N edges
     """
     dist_mx = np.full((num_vx, num_vx), INF)
@@ -49,7 +94,8 @@ def triple_dist_oneb(triples, num_vx):
     Take (from, to, weight) tuples and form distance matrix
     from, to - vertex indices, one-based
     
-    triples - seq of triples
+    triples - sequence of 3-tuples
+    num_vx - int vertex count
     return - distance matrix, row N (zero-based) represents vertex N edges
     """
 
@@ -63,7 +109,7 @@ def half_mx_dist(half_mx):
     matrix
 
     half_mx - right upper diagonal cut of distance matrix
-    return - distance matrix, row N represents vertex N edges
+    return - numpy distance matrix, row N represents vertex N edges
     """    
     w = len(half_mx[0]) + 1
     dist_mx = np.full((w, w), INF)
