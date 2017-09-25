@@ -17,7 +17,8 @@ from graph_algos.distance_matrix import verify_dist_mx, triple_dist_oneb, triple
 
 class TestAux(unittest.TestCase):
 
-    def test_graph_dist_mx(self):
+    """
+    def test_geometric_graph_dist_mx(self):
         g = nx.Graph()
         g.add_edge(0, 1, weight=3)
         g.add_edge(0, 2, weight=4)
@@ -33,6 +34,7 @@ class TestAux(unittest.TestCase):
 
         print(dist_mx)
         self.assertEqual(np.ma.allequal(dist_mx, check), True)
+    """
 
     def test_path_length(self):
         mx1 = np.array([ 

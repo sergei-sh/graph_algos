@@ -12,23 +12,25 @@ import numpy as np
 
 from graph_algos import INF, GraphAlgoException
 
-"TODO: rewrite"
-def graph_dist_mx(*, graph):
-    """Convert NetworkX graph into distance matrix
-    
-    graph - networkx.Graph
+def generate_geometric_dist_mx(size):
+    """ Create a distance matrix with distances in metric space
+
+    size - vertices number
     return - numpy distance matrix
     """
-    size = len(graph.nodes())
-    dist_mx = np.full((size, size), INF)
-    for i in range(0, size):
-        for j in range(0, size):
-            if i != j:
-                try:
-                    dist_mx[i][j] = graph[i][j]["weight"] 
-                except KeyError:
-                    pass
-    return dist_mx                
+    if size < 2:
+        raise GraphAlgoException("Will generate at least 2 vertices")
+
+    DIMENSIONS = 2
+    xy = np.random.rand(size, DIMENSIONS)
+    # .shape = (size, size, DIMENSIONS)
+    distances = xy[:, None, :] - xy[None, :, :]
+    dist_sqr = distances ** 2
+    # (size, size)
+    dist_sum = np.sum(dist_sqr, axis=-1)
+    dist_mx = np.sqrt(dist_sum)
+    np.place(dist_mx, dist_mx == 0, INF)
+    return dist_mx
 
 def path_length(dist_mx, *, path):
     """Count the cost (sum of weights) of a given path
