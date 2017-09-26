@@ -12,25 +12,71 @@ import numpy as np
 
 from graph_algos import INF, GraphAlgoException
 
-def generate_geometric_dist_mx(size):
-    """ Create a distance matrix with distances in metric space
+def unpack_edge(edge):       
+    """ For (from, to, weight) edge does nothing. For (from, to) adds weight 1. 
+    Raises if length is not 2 or 3.
 
-    size - vertices number
-    return - numpy distance matrix
+    return - (from, to, weight) tuple
     """
-    if size < 2:
-        raise GraphAlgoException("Will generate at least 2 vertices")
+    if len(edge) < 2 or len(edge) > 3:
+        raise GraphAlgosException("Malformed (vert, vert, weight) tuple")
 
-    DIMENSIONS = 2
-    xy = np.random.rand(size, DIMENSIONS)
-    # .shape = (size, size, DIMENSIONS)
-    distances = xy[:, None, :] - xy[None, :, :]
-    dist_sqr = distances ** 2
-    # (size, size)
-    dist_sum = np.sum(dist_sqr, axis=-1)
-    dist_mx = np.sqrt(dist_sum)
-    np.place(dist_mx, dist_mx == 0, INF)
-    return dist_mx
+    from_v, to_v = edge[:2]
+    try:
+        weight = edge[2] 
+    except IndexError:
+        weight = 1
+        
+    return (from_v, to_v, weight)
+
+
+def add_edge(dist_mx, *, edge):
+    """Add an edge to the graph in-place. Raise an exception if edge already exists
+
+    edge - tuple (from, to) or (from, to, weight)
+    """
+    from_v, to_v, w = unpack_edge(edge)
+
+    if dist_mx[from_v][to_v] != INF or dist_mx[to_v][from_v] != INF:
+        raise GraphAlgoException("Edge already exists") 
+
+    dist_mx[from_v][to_v] = w
+    dist_mx[to_v][from_v] = w
+
+def remove_edge(dist_mx, *, edge):
+    """Removes an edge from the graph in-place. Raise an exception if doesn't exist
+
+    edge - tuple (from, to) or (from, to, weight)
+    """
+    from_v, to_v, w = unpack_edge(edge)
+
+    if dist_mx[from_v][to_v] == INF or dist_mx[to_v][from_v] == INF:
+        raise GraphAlgoException("Edge doesn't exist") 
+
+    dist_mx[from_v][to_v] = INF
+    dist_mx[to_v][from_v] = INF 
+
+
+def neighbours(dist_mx, *, vertex):
+    """Get neighbouring nodes, given distance matrix of a graph
+
+    dist_mx - distance matrix
+    vertex - vertex N, whos neighbours
+    return - neighbours set
+    """    
+    return set(np.nonzero(dist_mx[vertex] != INF)[0])
+
+def odd_vertices(dist_mx):
+    """Take odd degree vertices from a graph   
+
+    dist_mx - distance matrix
+    return - tuple of vertices
+    """
+    return np.where(
+        [(np.sum(dist_mx[row] != INF) % 2 == 1) 
+        for row in range(0, dist_mx.shape[0])]
+        )[0] 
+
 
 def path_length(dist_mx, *, path):
     """Count the cost (sum of weights) of a given path
@@ -74,52 +120,4 @@ def verify_dist_mx(dist_mx):
                 if not dist_mx[i][j] == dist_mx[j][i]:
                     raise GraphAlgoException
 
-def triple_dist_zerob(triples, num_vx):                    
-    """ Create a graph given edges and total vertex number.
-    Take (from, to, weight) tuples and form distance matrix.
-    from, to - vertex indices, zero-based
-    
-    triples - sequence of 3-tuples
-    num_vx - int vertex count
-    return - distance matrix, row N (zero-based) represents vertex N edges
-    """
-    dist_mx = np.full((num_vx, num_vx), INF)
-    for from_v, to_v, weight in triples:
-        dist_mx[from_v][to_v] = weight
-        dist_mx[to_v][from_v] = weight
 
-    return dist_mx
-
-
-def triple_dist_oneb(triples, num_vx):                    
-    """Create a graph given edges and total vertex number.
-    Take (from, to, weight) tuples and form distance matrix
-    from, to - vertex indices, one-based
-    
-    triples - sequence of 3-tuples
-    num_vx - int vertex count
-    return - distance matrix, row N (zero-based) represents vertex N edges
-    """
-
-#make copy
-    triples = np.array(triples)
-    triples[:,:2] -= 1
-    return triple_dist_zerob(triples, num_vx)
-
-def half_mx_dist(half_mx):
-    """Given the diagonal half of distance matrix, mirror it to get the complete distance
-    matrix
-
-    half_mx - right upper diagonal cut of distance matrix
-    return - numpy distance matrix, row N represents vertex N edges
-    """    
-    w = len(half_mx[0]) + 1
-    dist_mx = np.full((w, w), INF)
-    for y in range(0, w):
-        for x in range(0, w):
-            if x > y:
-                dist_mx[y][x] = half_mx[y][x - 1 - y]
-            elif x < y:
-                dist_mx[y][x] = half_mx[x][y - 1 - x]
-    return dist_mx 
-    

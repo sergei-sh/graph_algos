@@ -12,23 +12,12 @@ import unittest
 
 from graph_algos import INF, GraphAlgoException 
 from graph_algos.distance_matrix import triple_dist_zerob, half_mx_dist, verify_dist_mx
-from graph_algos.color_tree import tree_2coloring, neighbours
+from graph_algos.color_tree import tree_2coloring
 
 class TestColor(unittest.TestCase):
 
     def setUp(self):
         pass
-
-    def test_neighbours(self):
-        self.mx1 = np.array([ 
-            [INF, 10, 15, 20], 
-            [10, INF, 35, 25], 
-            [15, 35, INF, 30], 
-            [20, 25, 30, INF],
-            ])
-
-        neigh = neighbours(self.mx1, vertex=1)
-        self.assertEqual(neigh, set([0, 2, 3]))
 
     def test_color(self):        
         mx1 = triple_dist_zerob(((0, 1, 0), (1, 2, 0), (1, 3, 0), (2, 4, 0), (2, 5, 0)), 6)

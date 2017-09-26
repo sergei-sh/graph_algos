@@ -12,29 +12,59 @@ import numpy as np
 import unittest
 
 from graph_algos import INF, GraphAlgoException
-from graph_algos.distance_matrix import verify_dist_mx, triple_dist_oneb, triple_dist_zerob, half_mx_dist, path_length, graph_dist_mx
+from graph_algos.distance_matrix import verify_dist_mx, path_length, odd_vertices, neighbours, \
+    add_edge, remove_edge
 
 
-class TestAux(unittest.TestCase):
+class TestDistmx(unittest.TestCase):
 
-    """
-    def test_geometric_graph_dist_mx(self):
-        g = nx.Graph()
-        g.add_edge(0, 1, weight=3)
-        g.add_edge(0, 2, weight=4)
-        g.add_edge(2, 3, weight=5)
-
-        dist_mx = graph_dist_mx(graph=g) 
-        check = np.array([
-            [INF, 3, 4, INF],
-            [3, INF, INF, INF],
-            [4, INF, INF, 5],
-            [INF, INF, 5, INF],
+    def test_add_remove_edge(self):
+        mx1 = np.array([
+            [INF, 7, INF],
+            [7, INF, 8],
+            [INF, 8, INF],
             ])
 
-        print(dist_mx)
-        self.assertEqual(np.ma.allequal(dist_mx, check), True)
-    """
+        add_edge(mx1, edge=(0, 2, 5))
+        check = np.array([
+            [INF, 7, 5],
+            [7, INF, 8],
+            [5, 8, INF],
+            ])
+ 
+        self.assertEquals(np.ma.allequal(mx1, check), True)
+
+        remove_edge(mx1, edge=(1, 2))
+        check = np.array([
+            [INF, 7, 5],
+            [7, INF, INF],
+            [5, INF, INF],
+            ])
+ 
+        self.assertEquals(np.ma.allequal(mx1, check), True)
+
+    def test_neighbours(self):
+        self.mx1 = np.array([ 
+            [INF, 10, 15, 20], 
+            [10, INF, 35, 25], 
+            [15, 35, INF, 30], 
+            [20, 25, 30, INF],
+            ])
+
+        neigh = neighbours(self.mx1, vertex=1)
+        self.assertEqual(neigh, set([0, 2, 3]))
+
+
+    def test_odd_vertices(self):
+        mx1 = np.array([ 
+                [INF, 1, 4, INF], 
+                [1, INF, 3, 6], 
+                [4, 3, INF, 7], 
+                [INF, 6, 7, INF], ])
+
+        odd_v = odd_vertices(mx1)
+        self.assertEquals(np.ma.allequal(odd_v, np.array([1, 2])), True)
+
 
     def test_path_length(self):
         mx1 = np.array([ 
@@ -61,52 +91,12 @@ class TestAux(unittest.TestCase):
         mx1[0][2] = 0
         self.assertRaises(GraphAlgoException, verify_dist_mx, mx1)
 
-    def test_triple_zerob(self):
-        mx1 = np.array([(0, 1, 7), (1, 2, 8)])        
-        mx1 = triple_dist_zerob(triples=mx1, num_vx=3)
-        check = np.array([
-            [INF, 7, INF],
-            [7, INF, 8],
-            [INF, 8, INF],
-            ])
-
-        self.assertEqual(np.ma.allequal(mx1, check), True)
-
-
-    def test_triple_oneb(self):
-        mx1 = np.array([(1, 2, 10), (1, 4, 20), (1, 3, 15)])        
-        mx1 = triple_dist_oneb(triples=mx1, num_vx=4)
-        check = np.array([[INF, 10, 15, 20],
-            [10, INF, INF, INF],
-            [15, INF, INF, INF],
-            [20, INF, INF, INF],
-            ])
-        
-        self.assertEqual(np.ma.allequal(mx1, check), True)
-
-    def test_half_mx_dist(self):
-        half_mx = np.array([
-            [0, 1, 2],
-            [3, 4],
-            [5],
-            ])
-        mx1 = half_mx_dist(half_mx)
-
-        check = np.array([
-            [INF, 0, 1, 2],
-            [0, INF, 3, 4],
-            [1, 3, INF, 5],
-            [2, 4, 5, INF],
-            ] )
-
-        self.assertTrue(np.ma.allequal(mx1, check))
-
     def setUp(self):
         pass
 
     def tearDown(self):
         pass
 
-suite = unittest.TestLoader().loadTestsFromTestCase(TestAux)
+suite = unittest.TestLoader().loadTestsFromTestCase(TestDistmx)
 unittest.TextTestRunner(verbosity=2).run(suite)
 
