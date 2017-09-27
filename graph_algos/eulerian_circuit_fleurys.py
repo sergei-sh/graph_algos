@@ -25,7 +25,6 @@ def eulerian_circuit(dist_mx):
     # need removing edges, so working with a copy 
     dist_mx = dist_mx.copy()
 
-    print(dist_mx)
     if odd_vertices(dist_mx).size:
         raise GraphAlgoException("The graph is not Eulerian")
 
@@ -51,18 +50,13 @@ def eulerian_circuit(dist_mx):
         neigh = neighbours(dist_mx, vertex=vertex)
         if not neigh:
             break
-        # print("vert", vertex)
-        # print("N", neigh)
         for to in neigh:
             edge = (vertex, to)
-            # print("edge:", edge)
             if can_remove(edge): 
-                # print("e", edge, 1)
                 circuit.append(to)
                 remove_edge(dist_mx, edge=edge)
                 vertex = to
                 break
-            # print("e", edge, 0)
         else:
             assert False, "Too many bridges"
 
